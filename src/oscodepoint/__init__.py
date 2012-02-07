@@ -6,7 +6,7 @@ An interface to Ordnance Survey's CodePoint-Open. CodePoint-Open is a free
 dataset that maps UK postcodes to coordinates.
 
 `oscodepoint` reads in this data, whether in the original zip or decompressed,
-parses the dataset, and converts grid references to latitude and longitude.
+parses the data, and converts grid references to latitude and longitude.
 
 The dataset can be downloaded from
 http://www.ordnancesurvey.co.uk/oswebsite/products/code-point-open/
@@ -34,7 +34,9 @@ Too much data? Try limiting the postcode areas:
 
 Want the postcode's county?
 ---------------------------
-Try `codepoint.codelist`, an interface to `Doc/Codelist.xls`. For example:
+Postcode entries have a `Admin_country_code` field. `Doc/Codelist.xls` maps
+these codes to county names, and `codepoint.codelist` can be used to access
+this file. For example:
 
     >>> from oscodepoint import open_codepoint
     >>> codepoint = open_codepoint('codepo_gb.zip')
@@ -43,6 +45,16 @@ Try `codepoint.codelist`, an interface to `Doc/Codelist.xls`. For example:
     ...    print entry['Postcode'], entry['Latitude'], entry['Longitude'], county_list.get(entry['Admin_county_code'])
     ...    break
     NR1 1AA 52.6266175146 1.30932087485 Norfolk County
+
+
+Get the total number of postcodes for your progress bar:
+--------------------------------------------------------
+    >>> from oscodepoint import open_codepoint
+    >>> codepoint = open_codepoint('codepo_gb.zip')
+    >>> print codepoint.metadata['area_counts']['NR']
+    22730
+    >>> print codepoint.metadata['total_count']
+    1692241
 """
 
 
@@ -54,6 +66,9 @@ import pyproj
 import re
 import xlrd
 import zipfile
+
+
+__all__ = ['open_codepoint', 'CodePointDir', 'CodePointZip']
 
 
 def open_codepoint(filename):
@@ -90,6 +105,7 @@ class BaseCodePoint(object):
 
     root = 'Code-Point Open/'
     headers_name = 'Doc/Code-Point_Open_Column_Headers.csv'
+    metadata_name = 'Doc/metadata.txt'
     codelist_name = 'Doc/Codelist.xls'
     nhs_codelist_name = 'Doc/NHS_Codelist.xls'
     data_name_format = 'Data/%s.csv'
@@ -134,6 +150,10 @@ class BaseCodePoint(object):
     @lazyproperty
     def long_headers(self):
         return self._get_headers()['long']
+
+    @lazyproperty
+    def metadata(self):
+        return self._get_metadata()
 
     @lazyproperty
     def codelist(self):
@@ -182,6 +202,9 @@ class CodePointZip(BaseCodePoint):
             long=long_headers,
         )
  
+    def _get_metadata(self):
+        return Metadata(self._open(self.metadata_name))
+ 
     def _get_codelist(self):
         return CodeList(self.codelist_name, file_contents=self._read(self.codelist_name))
     
@@ -212,11 +235,65 @@ class CodePointDir(BaseCodePoint):
             long=long_headers,
         )
  
+    def _get_metadata(self):
+        return Metadata(open(os.path.join(self.path, self.metadata_name)))
+ 
     def _get_codelist(self):
         return CodeList(os.path.join(self.path, self.codelist_name))
     
     def _get_nhs_codelist(self):
         return NHSCodeList(os.path.join(self.path, self.nhs_codelist_name))
+
+
+class Metadata(dict):
+    """
+    Parse the Doc/metadata.txt file. Used via `codepoint.metadata`
+    """
+
+    header_re = re.compile(r'^([^:]+):\s*([^:]+)$')
+    area_count_re = re.compile(r'^\s+([A-Z]{1,2})\s+(\d+)$')
+
+    def __init__(self, f):
+        self['area_counts'] = {}
+        for line, mode in self.line_modes(f):
+            if mode == 'header':
+                match = self.header_re.search(line)
+                self[match.group(1)] = match.group(2)
+            
+            if mode == 'area_count':
+                match = self.area_count_re.search(line)
+                self['area_counts'][match.group(1)] = int(match.group(2))
+        
+        self['total_count'] = sum(self['area_counts'].itervalues())
+
+    def line_modes(self, lines):
+        mode = 'file_start'
+        for line in lines:
+            line = line.rstrip()
+            mode = self.line_mode(line, mode)
+            yield (line, mode)
+
+    def line_mode(self, line, prev_mode):
+        magic = 'ORDNANCE SURVEY'
+
+        if prev_mode == 'file_start':
+            if line == magic:
+                return 'magic'
+            else:
+                raise ValueError('Expected "%s" text on first line of metadata file' % magic)
+        
+        if prev_mode in ('magic', 'header',):
+            if self.header_re.search(line):
+                return 'header'
+            elif self.area_count_re.search(line):
+                return 'area_count'
+        
+        if prev_mode == 'area_count':
+            if self.area_count_re.search(line):
+                return 'area_count'
+        
+        raise ValueError('Can\'t get next mode from mode "%s" and line "%s"' % (mode, line,))
+
 
 
 class CodeList(dict):
