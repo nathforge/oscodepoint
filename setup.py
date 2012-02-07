@@ -9,7 +9,7 @@ PACKAGE_PATH = 'src'
 setup(
     name='oscodepoint',
     url='https://github.com/nathforge/oscodepoint',
-    version='0.1',
+    version='0.2',
     description='A Python interface to Ordnance Survey\'s CodePoint-Open data',
     long_description=open('README.txt').read(),
     
