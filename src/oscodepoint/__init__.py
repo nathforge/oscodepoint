@@ -135,6 +135,7 @@ class BaseCodePoint(object):
             
             for row in self._get_name_rows(self.data_name_format % area.lower()):
                 entry = dict(zip(self.long_headers, row))
+                entry['_Area'] = area
 
                 if to_proj is not None:
                     eastings, northings = float(entry['Eastings']), float(entry['Northings'])
