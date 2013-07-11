@@ -108,7 +108,7 @@ class BaseCodePoint(object):
     metadata_name = 'Doc/metadata.txt'
     codelist_name = 'Doc/Codelist.xls'
     nhs_codelist_name = 'Doc/NHS_Codelist.xls'
-    data_name_format = 'Data/%s.csv'
+    data_name_format = 'Data/CSV/%s.csv'
     
     def entries(self, areas=None, to_proj=pyproj.Proj(init='epsg:4326')):
         """
@@ -124,10 +124,10 @@ class BaseCodePoint(object):
         """
 
         from_proj = pyproj.Proj(init='epsg:27700') # British National grid
-
+        
         if areas is None:
             areas = self.areas
-
+        
         for area in areas:
             if not re.search(r'^[A-Za-z]{1,2}$', area):
                 raise ValueError('Incorrect format for area: '
@@ -180,13 +180,13 @@ class CodePointZip(BaseCodePoint):
         self.zip_file = zipfile.ZipFile(zip_filename)
     
     def _open(self, name):
-        return self.zip_file.open(self.root + name)
+        return self.zip_file.open(name)
     
     def _read(self, name):
-        return self.zip_file.read(self.root + name)
+        return self.zip_file.read(name)
 
     def _get_areas(self):
-        pattern = self.root + (self.data_name_format % '*')
+        pattern = self.data_name_format % '*'
         return self._areas_from_names(
             name for name in self.zip_file.namelist()
             if fnmatch.fnmatch(name, pattern)
@@ -293,7 +293,6 @@ class Metadata(dict):
                 return 'area_count'
         
         raise ValueError('Can\'t get next mode from mode "%s" and line "%s"' % (mode, line,))
-
 
 
 class CodeList(dict):
