@@ -58,6 +58,7 @@ Get the total number of postcodes for your progress bar:
 """
 
 
+from collections import OrderedDict
 import csv
 import fnmatch
 import glob
@@ -134,7 +135,7 @@ class BaseCodePoint(object):
                                  'expected 1 or 2 letters, got "%s"' % (area,))
             
             for row in self._get_name_rows(self.data_name_format % area.lower()):
-                entry = dict(zip(self.long_headers, row))
+                entry = OrderedDict(zip(self.long_headers, row))
                 entry['_Area'] = area
 
                 if to_proj is not None:
