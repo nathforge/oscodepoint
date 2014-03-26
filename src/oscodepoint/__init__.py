@@ -104,7 +104,7 @@ class BaseCodePoint(object):
     `CodePointDir`, or just forget about the difference and use `open_codepoint()`.
     """
 
-    root = 'Code-Point Open/'
+    root = ''
     headers_name = 'Doc/Code-Point_Open_Column_Headers.csv'
     metadata_name = 'Doc/metadata.txt'
     codelist_name = 'Doc/Codelist.xls'
