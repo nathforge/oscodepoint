@@ -70,6 +70,7 @@ import pyproj
 import re
 import xlrd
 import zipfile
+import io
 
 
 __all__ = ['open_codepoint', 'CodePointDir', 'CodePointZip']
@@ -127,7 +128,7 @@ class BaseCodePoint(object):
         `None` if you don't want coordinate conversion.
         """
 
-        from_proj = pyproj.Proj(init='epsg:27700') # British National grid
+        from_proj = pyproj.Proj(init='epsg:27700')  # British National grid
 
         if areas is None:
             areas = self.areas
@@ -185,7 +186,8 @@ class CodePointZip(BaseCodePoint):
         self.zip_file = zipfile.ZipFile(zip_filename)
 
     def _open(self, name):
-        return self.zip_file.open(name)
+        fileobj = self.zip_file.open(name)
+        return io.TextIOWrapper(fileobj, encoding='utf-8')
 
     def _read(self, name):
         return self.zip_file.read(name)
