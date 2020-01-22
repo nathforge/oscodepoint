@@ -204,10 +204,7 @@ class CodePointZip(BaseCodePoint):
 
     def _get_headers(self):
         short_headers, long_headers = csv.reader(self._open(self.headers_name))
-        return dict(
-            short=short_headers,
-            int=long_headers,
-        )
+        return {'short': short_headers, 'long': long_headers, }
 
     def _get_metadata(self):
         return Metadata(self._open(self.metadata_name))
@@ -237,10 +234,7 @@ class CodePointDir(BaseCodePoint):
 
     def _get_headers(self):
         short_headers, long_headers = csv.reader(open(os.path.join(self.path, self.headers_name)))
-        return dict(
-            short=short_headers,
-            int=long_headers,
-        )
+        return {'short': short_headers, 'long': long_headers, }
 
     def _get_metadata(self):
         return Metadata(open(os.path.join(self.path, self.metadata_name)))
