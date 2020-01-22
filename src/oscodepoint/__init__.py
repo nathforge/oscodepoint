@@ -17,9 +17,9 @@ Example:
     >>> from oscodepoint import open_codepoint
     >>> codepoint = open_codepoint('codepo_gb.zip')
     >>> for entry in codepoint.entries():
-    ...    print entry['Postcode'], entry['Latitude'], entry['Longitude']
+    ...    print(entry['Postcode'], entry['Latitude'], entry['Longitude'])
     ...    break  # Over 1.6 million rows
-    AB101AA 57.1482995075 -2.09663094048
+    AB101AB 57.14960585135685 -2.096915870436699
 
 
 Too much data? Try limiting the postcode areas:
@@ -27,14 +27,14 @@ Too much data? Try limiting the postcode areas:
     >>> from oscodepoint import open_codepoint
     >>> codepoint = open_codepoint('codepo_gb.zip')
     >>> for entry in codepoint.entries(areas=['NR', 'IP']):
-    ...    print entry['Postcode'], entry['Eastings'], entry['Northings']
+    ...    print(entry['Postcode'], entry['Eastings'], entry['Northings'])
     ...    break
-    NR1 1AA 624068 308352
+    NR1 1AA 624073 308352
 
 
 Want the postcode's county?
 ---------------------------
-Postcode entries have a `Admin_country_code` field. `Doc/Codelist.xls` maps
+Postcode entries have a `Admin_country_code` field. `Doc/Codelist.xlsx` maps
 these codes to county names, and `codepoint.codelist` can be used to access
 this file. For example:
 
@@ -42,19 +42,19 @@ this file. For example:
     >>> codepoint = open_codepoint('codepo_gb.zip')
     >>> county_list = codepoint.codelist['County']
     >>> for entry in codepoint.entries(areas=['NR']):
-    ...    print entry['Postcode'], entry['Latitude'], entry['Longitude'], county_list.get(entry['Admin_county_code'])
+    ...    print(entry['Postcode'], entry['Latitude'], entry['Longitude'], county_list.get(entry['Admin_county_code']))
     ...    break
-    NR1 1AA 52.6266175146 1.30932087485 Norfolk County
+    NR1 1AA 52.62664973954727 1.309339118432984 Norfolk County
 
 
 Get the total number of postcodes for your progress bar:
 --------------------------------------------------------
     >>> from oscodepoint import open_codepoint
     >>> codepoint = open_codepoint('codepo_gb.zip')
-    >>> print codepoint.metadata['area_counts']['NR']
-    22730
-    >>> print codepoint.metadata['total_count']
-    1692241
+    >>> print(codepoint.metadata['area_counts']['NR'])
+    23392
+    >>> print(codepoint.metadata['total_count'])
+    1702489
 """
 
 
@@ -111,7 +111,7 @@ class BaseCodePoint(object):
     root = ''
     headers_name = 'Doc/Code-Point_Open_Column_Headers.csv'
     metadata_name = 'Doc/metadata.txt'
-    codelist_name = 'Doc/Codelist.xls'
+    codelist_name = 'Doc/Codelist.xlsx'
     nhs_codelist_name = 'Doc/NHS_Codelist.xls'
     data_name_format = 'Data/CSV/%s.csv'
 
@@ -325,7 +325,7 @@ class CodeList(dict):
                 # friendlier names. We'll use these at the end of the loop.
                 lookup_aliases = self[sheet.name]
 
-        for alias, lookup_name in lookup_aliases.items():
+        for alias, lookup_name in list(lookup_aliases.items()):
             self[alias] = self[lookup_name]
 
 
