@@ -94,7 +94,7 @@ class lazyproperty(object):
     
     def __get__(self, obj, type=None):
         value = self.fget(obj)
-        setattr(obj, self.fget.func_name, value)
+        setattr(obj, self.fget.__name__, value)
         return value
 
 
